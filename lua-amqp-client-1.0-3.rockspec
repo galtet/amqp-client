@@ -1,8 +1,8 @@
 package = "lua-amqp-client"
-version = "1.0-2"
+version = "1.0-3"
 source = {
-  url = "https://github.com/galtet/amqp-client",
-  tag = "v1.0-2"
+  url = "git://github.com/galtet/amqp-client.git",
+  tag = "v1.0-3"
 }
 description = {
   summary = "Lua amqp driver",
@@ -19,8 +19,7 @@ build = {
    modules = {
       amqp = {
          sources = {"src/channel.c", "src/helpers.c", "src/lua_amqp.c", "src/queue.c", "src/session.c", "src/utils.c"},
-         libraries = {"rabbitmq"},
-         incdir = "/src"
+         libraries = {"rabbitmq"}
       }
    }
 }
