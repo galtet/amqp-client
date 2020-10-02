@@ -1,5 +1,4 @@
 #include "channel.h"
-#include <stdio.h>
 
 const char* extract_envelope_message(void const *buffer, size_t len) {
   char *res  = (char*)malloc(len + 1);
