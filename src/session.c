@@ -2,11 +2,11 @@
 
 LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
-  amqp_connection_state_t connection = conn -> connection;
+  amqp_connection_state_t connection = conn -> amqp_connection;
 
   channel_t *chan = (channel_t *) lua_newuserdata(L, sizeof(channel_t));
   chan -> id = 1;
-  chan -> connection = connection;
+  chan -> connection = conn;
   setmeta(L, "channel");
 
   amqp_channel_open(connection, 1);
@@ -55,9 +55,17 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
 
   connection_t *c = (connection_t *) lua_newuserdata(L, sizeof(connection_t));
   setmeta(L, "session");
-  c->connection = conn;
+  c->amqp_connection= conn;
 
   return 1;
+}
+
+LUALIB_API int lua_amqp_session_free(lua_State *L) {
+  connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
+  die_on_amqp_error(amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");
+  die_on_error(amqp_destroy_connection(conn -> amqp_connection), "Ending connection");
+
+  return 0;
 }
 
 static luaL_Reg session_module[] = {

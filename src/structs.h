@@ -5,12 +5,17 @@
 #include <amqp_tcp_socket.h>
 
 typedef struct {
-  amqp_connection_state_t connection;
+  amqp_connection_state_t amqp_connection;
 } connection_t;
 
 typedef struct {
-  amqp_connection_state_t connection;
+  connection_t* connection;
   int id;
 } channel_t;
+
+typedef struct {
+  channel_t* channel;
+  const char* name;
+} queue_t;
 
 #endif
