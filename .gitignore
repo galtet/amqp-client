@@ -1,3 +1,4 @@
 *.so
 bin/
 obj/
+src/*.o
