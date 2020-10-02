@@ -3,7 +3,6 @@
 
 static const luaL_Reg modules[] = {
   { "session",  lua_amqp_session_open },
-  { "consumer", lua_amqp_consumer_open },
   { "channel", lua_amqp_channel_open },
   {NULL, NULL}
 };

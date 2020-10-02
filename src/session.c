@@ -19,13 +19,24 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
   int status;
   int port;
   const char *host;
+  const char *username;
+  const char *password;
+  const char *vhost;
+
 
   luaL_checktype(L, 1, LUA_TTABLE);
   lua_getfield(L, 1, "host");
   lua_getfield(L, 1, "port");
+  lua_getfield(L, 1, "username");
+  lua_getfield(L, 1, "password");
+  lua_getfield(L, 1, "vhost");
 
-  host = lua_tostring(L, -2); 
-  port = lua_tonumber(L, -1); 
+
+  host = lua_tostring(L, -5); 
+  port = lua_tonumber(L, -4);
+  username = lua_tostring(L, -3); 
+  password = lua_tostring(L, -2); 
+  vhost = lua_tostring(L, -1); 
 
   amqp_socket_t *socket = NULL;
   amqp_connection_state_t conn;
@@ -40,7 +51,7 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
   if (status) {
     die("opening TCP socket");
   }
-  die_on_amqp_error(amqp_login(conn, "/", 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, "admin", "admin"), "Logging in");
+  die_on_amqp_error(amqp_login(conn, vhost, 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, username, password), "Logging in");
 
   connection_t *c = (connection_t *) lua_newuserdata(L, sizeof(connection_t));
   setmeta(L, "session");
