@@ -1,8 +1,9 @@
 #include "queue.h"
 
-const char* extract_envelope_message(void const *buffer, size_t len) {
+char* extract_envelope_message(void const *buffer, size_t len) {
   char *res  = (char*)malloc(len + 1);
-  snprintf(res, len, "%s", (char*)buffer);
+  memcpy(res, buffer, len);
+  res[len] = '\0';
 
   return res;
 }
@@ -11,6 +12,7 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
   amqp_connection_state_t connection = queue -> channel -> connection -> amqp_connection;
   const char *queuename = queue -> name;
+  char *msg;
 
   // subscribing for the queue - blocking call
   amqp_basic_consume(connection, 1, amqp_cstring_bytes(queuename), amqp_empty_bytes, 0, 0, 0, amqp_empty_table);
@@ -22,9 +24,11 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   die_on_amqp_error(amqp_consume_message(connection, &envelope, NULL, 0), "Fetching message"); // blocking call - waiting for a message
 
   // returning the msg + delivery tag
-  lua_pushstring(L, extract_envelope_message(envelope.message.body.bytes, envelope.message.body.len));
+  msg = extract_envelope_message(envelope.message.body.bytes, envelope.message.body.len);
+  lua_pushstring(L, msg);
   lua_pushnumber(L, envelope.delivery_tag);
 
+  free(msg);
   amqp_destroy_envelope(&envelope);
 
   return 2;
