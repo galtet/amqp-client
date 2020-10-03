@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Buildng the amqp client
     steps:
-    - uses: actions/checkout@v2 now
+    - uses: actions/checkout@v2
     - name: building the docker image
       id: build-image
       run: docker build -t amqp_image .
