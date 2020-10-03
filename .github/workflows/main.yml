@@ -11,4 +11,4 @@ jobs:
       run: docker build -t amqp_image .
     - name: running make on the container
       id: run-container-make
-      run: docker run -it amqp_image
+      run: docker run -t amqp_image
