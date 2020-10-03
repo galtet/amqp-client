@@ -6,6 +6,7 @@
 
 typedef struct {
   amqp_connection_state_t amqp_connection;
+  int is_ssl;
 } connection_t;
 
 typedef struct {
