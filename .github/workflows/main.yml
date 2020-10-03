@@ -7,4 +7,4 @@ jobs:
     steps:
     - name: building thr amqp client using makefile
       id: build-amqp-client-make
-      uses: actions/amqp-client@v1
+      uses: actions/amqp-client@v1.0-4
