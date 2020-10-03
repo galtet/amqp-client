@@ -2,11 +2,28 @@
 
 void fetch_connection_params(lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
-  lua_getfield(L, 1, "host");
-  lua_getfield(L, 1, "port");
-  lua_getfield(L, 1, "username");
-  lua_getfield(L, 1, "password");
+
+  lua_getfield(L, 1, "timeout");
+  lua_getfield(L, 1, "key");
+  lua_getfield(L, 1, "cert");
+  lua_getfield(L, 1, "cacert");
+  lua_getfield(L, 1, "ssl");
   lua_getfield(L, 1, "vhost");
+  lua_getfield(L, 1, "password");
+  lua_getfield(L, 1, "username");
+  lua_getfield(L, 1, "port");
+  lua_getfield(L, 1, "host");
+}
+
+struct timeval* get_timeout(struct timeval *tv, int timeout) {
+  if (timeout > 0) {
+    tv->tv_sec = timeout;
+    tv->tv_usec = 0;
+  } else {
+    return NULL;
+  }
+
+  return tv;
 }
 
 /**
@@ -29,6 +46,59 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   return 1;
 }
 
+void connect_ssl(
+  amqp_connection_state_t connection,
+  const char* hostname,
+  int port,
+  const char* key,
+  const char* cert,
+  const char* cacert ,
+  int verify_peer,
+  int verify_hostname,
+  int timeout) {
+  amqp_socket_t *socket;
+
+  socket = amqp_ssl_socket_new(connection);
+  if (!socket) {
+    die("creating SSL/TLS socket");
+  }
+
+  amqp_ssl_socket_set_verify_peer(socket, 0);
+  amqp_ssl_socket_set_verify_hostname(socket, 0);
+
+  die_on_error(amqp_ssl_socket_set_cacert(socket, cacert), "setting CA certificate");
+
+  if (verify_peer) {
+      amqp_ssl_socket_set_verify_peer(socket, 1);
+    }
+  if (verify_hostname) {
+      amqp_ssl_socket_set_verify_hostname(socket, 1);
+    }
+
+  die_on_error(amqp_ssl_socket_set_key(socket, cert, key), "setting client key");
+
+  struct timeval tval;
+  struct timeval* tv;
+
+  tv = get_timeout(&tval, timeout);
+  die_on_error(amqp_socket_open_noblock(socket, hostname, port, tv), "opening SSL/TLS connection");
+}
+
+void connect_regular(amqp_connection_state_t connection, const char* hostname, int port) {
+  amqp_socket_t *socket = NULL;
+  int status;
+
+  socket = amqp_tcp_socket_new(connection);
+  if (!socket) {
+    die("creating TCP socket");
+  }
+
+  status = amqp_socket_open(socket, hostname, port);
+  if (status) {
+    die("opening TCP socket");
+  }
+}
+
 /**
 * :lua_amqp_session_new
 *
@@ -37,34 +107,43 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
 * @params[1] table with the following fields: host, port, username, password, vhost
 */
 LUALIB_API int lua_amqp_session_new(lua_State *L) {
-  int status;
   int port;
   const char *host;
   const char *username;
   const char *password;
   const char *vhost;
+  int ssl;
+
+  // SSL fields
+  const char *key;
+  const char *cert;
+  const char *cacert;
+  int timeout;
+
+  amqp_connection_state_t conn;
 
   fetch_connection_params(L);
 
-  host = lua_tostring(L, -5);
-  port = lua_tonumber(L, -4);
-  username = lua_tostring(L, -3);
-  password = lua_tostring(L, -2);
-  vhost = lua_tostring(L, -1);
-
-  amqp_socket_t *socket = NULL;
-  amqp_connection_state_t conn;
+  host = luaL_optstring(L, -1, DEFAULT_HOST);
+  port = luaL_optint (L, -2, DEFAULT_PORT);
+  username = luaL_optstring(L, -3, DEFAULT_USERNAME);
+  password = luaL_optstring(L, -4, DEFAULT_PASSWORD);
+  vhost = luaL_optstring(L, -5, DEFAULT_VHOST);
+  ssl = lua_toboolean(L, -6);
 
   conn = amqp_new_connection();
-  socket = amqp_tcp_socket_new(conn);
-  if (!socket) {
-    die("creating TCP socket");
+
+  if (ssl) {
+    port = luaL_optint (L, -2, DEFAULT_SSL_PORT);
+    cacert = luaL_checkstring(L, -7);
+    cert = lua_tostring(L, -8);
+    key = lua_tostring(L, -9);
+    timeout = luaL_optint (L, -10, DEFAULT_SSL_TIMEOUT);
+    connect_ssl(conn, host, port, key, cert, cacert, 0, 0, timeout);
+  } else {
+    connect_regular(conn, host, port);
   }
 
-  status = amqp_socket_open(socket, host, port);
-  if (status) {
-    die("opening TCP socket");
-  }
   die_on_amqp_error(amqp_login(conn, vhost, 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, username, password), "Logging in");
 
   connection_t *c = (connection_t *) lua_newuserdata(L, sizeof(connection_t));
@@ -83,6 +162,10 @@ LUALIB_API int lua_amqp_session_free(lua_State *L) {
   connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
   die_on_amqp_error(amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");
   die_on_error(amqp_destroy_connection(conn -> amqp_connection), "Ending connection");
+
+  if (conn -> is_ssl) {
+    die_on_error(amqp_uninitialize_ssl_library(), "Uninitializing SSL library");
+  }
 
   return 0;
 }
