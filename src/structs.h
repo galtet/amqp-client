@@ -18,4 +18,9 @@ typedef struct {
   const char* name;
 } queue_t;
 
+typedef struct {
+  channel_t* channel;
+  const char* name;
+} exchange_t;
+
 #endif

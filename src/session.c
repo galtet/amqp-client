@@ -1,5 +1,19 @@
 #include "session.h"
 
+void fetch_connection_params(lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_getfield(L, 1, "host");
+  lua_getfield(L, 1, "port");
+  lua_getfield(L, 1, "username");
+  lua_getfield(L, 1, "password");
+  lua_getfield(L, 1, "vhost");
+}
+
+/**
+ * :lua_amqp_session_open_channel
+ *
+ * opens a new channel on the session
+ */
 LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
   amqp_connection_state_t connection = conn -> amqp_connection;
@@ -15,6 +29,13 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   return 1;
 }
 
+/**
+* :lua_amqp_session_new
+*
+* opens a new amqp session
+*
+* @params[1] table with the following fields: host, port, username, password, vhost
+*/
 LUALIB_API int lua_amqp_session_new(lua_State *L) {
   int status;
   int port;
@@ -23,20 +44,13 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
   const char *password;
   const char *vhost;
 
+  fetch_connection_params(L);
 
-  luaL_checktype(L, 1, LUA_TTABLE);
-  lua_getfield(L, 1, "host");
-  lua_getfield(L, 1, "port");
-  lua_getfield(L, 1, "username");
-  lua_getfield(L, 1, "password");
-  lua_getfield(L, 1, "vhost");
-
-
-  host = lua_tostring(L, -5); 
+  host = lua_tostring(L, -5);
   port = lua_tonumber(L, -4);
-  username = lua_tostring(L, -3); 
-  password = lua_tostring(L, -2); 
-  vhost = lua_tostring(L, -1); 
+  username = lua_tostring(L, -3);
+  password = lua_tostring(L, -2);
+  vhost = lua_tostring(L, -1);
 
   amqp_socket_t *socket = NULL;
   amqp_connection_state_t conn;
@@ -60,6 +74,11 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
   return 1;
 }
 
+/**
+* :lua_amqp_session_free
+*
+* closing the amqp session
+*/
 LUALIB_API int lua_amqp_session_free(lua_State *L) {
   connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
   die_on_amqp_error(amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");

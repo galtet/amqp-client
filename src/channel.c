@@ -1,5 +1,35 @@
 #include "channel.h"
 
+/**
+* :lua_amqp_channel_exchange
+*
+* get an exchange object
+*
+* @params[1] channel
+* @params[2] exchange name
+* @returns exchange object
+*/
+LUALIB_API int lua_amqp_channel_exchange(lua_State *L) {
+  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
+  const char* name = luaL_checkstring(L, 2);
+
+  exchange_t *exchange = (exchange_t *) lua_newuserdata(L, sizeof(exchange_t));
+  setmeta(L, "exchange");
+  exchange -> name = name;
+  exchange -> channel = chan;
+
+  return 1;
+}
+
+/**
+* :lua_amqp_channel_queue
+*
+* get a queue object
+*
+* @params[1] channel
+* @params[2] queue name
+* @returns queue object
+*/
 LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   const char* queuename = luaL_checkstring(L, 2);
@@ -12,6 +42,34 @@ LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
   return 1;
 }
 
+/**
+* :lua_amqp_channel_basic_qos
+*
+* set a QOS for a channel
+*
+* @params[1] channel
+* @params[2] prefetch_count - how many unacked msg's should we fetch
+* @returns queue object
+*/
+LUALIB_API int lua_amqp_channel_basic_qos(lua_State *L) {
+  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
+  int prefetch_count = luaL_checknumber(L, 2);
+  amqp_connection_state_t connection = chan -> connection -> amqp_connection;
+
+  amqp_basic_qos(connection, chan -> id, 0,  prefetch_count, 0);
+
+  return 1;
+}
+
+/**
+* :lua_amqp_channel_basic_ack
+*
+* sending an ack for a message
+*
+* @params[1] channel
+* @params[2] delivery tag - the massage indentifier
+* @params[3] multiple - ack all msg's until this tag
+*/
 LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   uint64_t delivery_tag = luaL_checknumber(L, 2);
@@ -23,6 +81,16 @@ LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
   return 1;
 }
 
+/**
+* :lua_amqp_channel_basic_nack
+*
+* sending an nack for a message
+*
+* @params[1] channel
+* @params[2] delivery tag - the massage indentifier
+* @params[3] multiple - nack all msg's until this tag
+* @params[4] requeue - whether to requeue the msg or not
+*/
 LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   uint64_t delivery_tag = luaL_checknumber(L, 2);
@@ -35,6 +103,13 @@ LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
   return 1;
 }
 
+/**
+* :lua_amqp_channel_free
+*
+* freeing the channel
+*
+* @params[1] channel
+*/
 LUALIB_API int lua_amqp_channel_free(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   die_on_amqp_error(amqp_channel_close(chan -> connection -> amqp_connection, 1, AMQP_REPLY_SUCCESS), "Closing channel");

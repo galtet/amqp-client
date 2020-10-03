@@ -1,9 +1,9 @@
 #ifndef LUAAMQP_SESSION_H
 #define LUAAMQP_SESSION_H
 
-#include <lua.h>                              
-#include <lauxlib.h>                           
-#include <lualib.h>                            
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 #include <amqp.h>
 #include <amqp_tcp_socket.h>
