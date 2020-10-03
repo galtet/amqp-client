@@ -46,6 +46,21 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   return 1;
 }
 
+/**
+* :connect_ssl
+*
+* open a new ss lconnection
+*
+* @params connection - the opened amqp connection
+* @params hostname
+* @params port
+* @params key
+* @params cert
+* @params cacert
+* @params verify_peer
+* @params verify_hostname
+* @params timeout - time for the ssl connection init
+*/
 void connect_ssl(
   amqp_connection_state_t connection,
   const char* hostname,
