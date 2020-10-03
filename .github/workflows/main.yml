@@ -1,0 +1,10 @@
+on: [push]
+
+jobs:
+  build-amqp-client:
+    runs-on: ubuntu-latest
+    name: Buildng the amqp client
+    steps:
+    - name: building thr amqp client using makefile
+      id: build-amqp-client-make
+      uses: actions/amqp-client@v1

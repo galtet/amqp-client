@@ -1,0 +1,6 @@
+# action.yml
+name: 'build-amqp-client'
+description: 'build the amqp project'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
