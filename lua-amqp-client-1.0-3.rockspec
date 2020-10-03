@@ -10,7 +10,7 @@ description = {
   Lua based amqp client, based around the official C library of amqp (librabbitmq)
   ]],
   homepage = "https://github.com/galtet/amqp-client",
-  license = "MIT/X11" -- or whatever you like
+  license = "MIT/X11"
 }
 dependencies = {
   "lua >= 5.1, < 5.4",
