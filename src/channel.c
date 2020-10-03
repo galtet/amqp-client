@@ -1,5 +1,41 @@
 #include "channel.h"
 
+ /**
+* :lua_amqp_channel_declare_exchange
+*
+* declare a new exchange
+*
+* @params[1] channel
+* @params[2] exchange name
+* @params[3] exchange type
+* @params[3] passive
+* @params[4] durable
+* @params[5] auto_delete
+* @params[6] internal
+* @returns exchange object
+*/
+LUALIB_API int lua_amqp_channel_declare_exchange(lua_State *L) {
+  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
+  const char* exchange_name = luaL_checkstring(L, 2);
+  const char* exchange_type = luaL_checkstring(L, 3);
+  int passive = lua_toboolean(L, 4);
+  int durable = lua_toboolean(L, 5);
+  int auto_delete = lua_toboolean(L, 6);
+  int internal =  lua_toboolean(L, 7);
+
+  amqp_exchange_declare(chan -> connection -> amqp_connection, chan -> id, amqp_cstring_bytes(exchange_name),
+                        amqp_cstring_bytes(exchange_type), passive, durable, auto_delete, internal,
+                        amqp_empty_table);
+  die_on_amqp_error(amqp_get_rpc_reply(chan -> connection -> amqp_connection), "Declaring exchange");
+
+  exchange_t *exchange = (exchange_t *) lua_newuserdata(L, sizeof(exchange_t));
+  setmeta(L, "exchange");
+  exchange -> name = exchange_name;
+  exchange -> channel = chan;
+
+  return 1;
+}
+
 /**
 * :lua_amqp_channel_exchange
 *

@@ -15,6 +15,7 @@
 
 LUALIB_API int lua_amqp_channel_open(lua_State *L);
 
+LUALIB_API int lua_amqp_channel_declare_exchange(lua_State *L);
 LUALIB_API int lua_amqp_channel_exchange(lua_State *L);
 LUALIB_API int lua_amqp_channel_queue(lua_State *L);
 LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L);
@@ -24,6 +25,7 @@ LUALIB_API int lua_amqp_channel_basic_qos(lua_State *L);
 LUALIB_API int lua_amqp_channel_free(lua_State *L);
 
 static const struct luaL_reg channel_reg[] = {
+  { "declare_exchange", lua_amqp_channel_declare_exchange },
   { "exchange", lua_amqp_channel_exchange },
   { "ack",  lua_amqp_channel_basic_ack },
   { "nack", lua_amqp_channel_basic_nack },
