@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Buildng the amqp client
     steps:
-    - name: building thr amqp client using makefile
-      id: build-amqp-client-make
-      uses: actions/amqp-client@v2
+    - name: building the docker image
+      id: build-image
+      uses: docker build -t amqp_image .
+    - name: running make on the container
+      id: run-container-make
+      uses: docker run -it amqp_image
