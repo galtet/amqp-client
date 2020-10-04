@@ -67,11 +67,10 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
 LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
   amqp_connection_state_t connection = queue -> channel -> connection -> amqp_connection;
-  const char *queuename = queue -> name;
   char *msg;
 
   // subscribing for the queue - blocking call
-  amqp_basic_consume(connection, 1, amqp_cstring_bytes(queuename), amqp_empty_bytes, 0, 0, 0, amqp_empty_table);
+  amqp_basic_consume(connection, 1, amqp_cstring_bytes(queue -> name), amqp_empty_bytes, 0, 0, 0, amqp_empty_table);
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Consuming");
 
   amqp_envelope_t envelope;
@@ -102,13 +101,12 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
 LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
   amqp_connection_state_t connection = queue -> channel -> connection -> amqp_connection;
-  const char *queuename = queue -> name;
   const char *msg = luaL_checkstring(L,2);
   const char* exchange = luaL_checkstring(L,3);
 
   die_on_error(
     L,
-    amqp_basic_publish(connection, queue -> channel -> id, amqp_cstring_bytes(exchange), amqp_cstring_bytes(queuename), 0, 0, NULL, amqp_cstring_bytes(msg)),
+    amqp_basic_publish(connection, queue -> channel -> id, amqp_cstring_bytes(exchange), amqp_cstring_bytes(queue -> name), 0, 0, NULL, amqp_cstring_bytes(msg)),
     "Publishing"
   );
   return 1;

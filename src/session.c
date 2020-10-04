@@ -138,8 +138,6 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
 
   amqp_connection_state_t conn;
 
-  die(L, "THIS IS S TEST");
-
   fetch_connection_params(L);
 
   host = luaL_optstring(L, -1, DEFAULT_HOST);

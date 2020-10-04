@@ -1,6 +1,54 @@
 #include "channel.h"
 
  /**
+* :lua_amqp_channel_queue_declare
+*
+* declare a new queue
+*
+* @params[1] channel
+* @params[2] queue name
+* @params[3] passive
+* @params[4] durable
+* @params[5] exclusive
+* @params[6] auto_delete
+* @returns queue object
+*/
+LUALIB_API int lua_amqp_channel_queue_declare(lua_State *L) {
+  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
+  const char* queue_name = luaL_checkstring(L, 2);
+  int passive = luaL_optboolean(L, 3, 0);
+  int durable = luaL_optboolean(L, 4, 1);
+  int exclusive = luaL_optboolean(L, 5, 0);
+  int auto_delete =  luaL_optboolean(L, 6, 0);
+
+  amqp_queue_declare(chan -> connection -> amqp_connection, chan -> id, amqp_cstring_bytes(queue_name),
+                     passive, durable, exclusive, auto_delete,
+                     amqp_empty_table);
+  die_on_amqp_error(L, amqp_get_rpc_reply(chan -> connection -> amqp_connection), "Declaring queue");
+
+  queue_t *queue = (queue_t *) lua_newuserdata(L, sizeof(queue_t));
+  setmeta(L, "queue");
+  queue -> name = queue_name;
+  queue -> channel = chan;
+
+  return 1;
+}
+
+/**
+* :lua_amqp_channel_queue
+*
+* get a queue object
+*
+* @params[1] channel
+* @params[2] queue name
+* @returns queue object
+*/
+LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
+  lua_amqp_channel_queue_declare(L);
+  return 1;
+}
+
+ /**
 * :lua_amqp_channel_exchange_declare
 *
 * declare a new exchange
@@ -8,20 +56,20 @@
 * @params[1] channel
 * @params[2] exchange name
 * @params[3] exchange type
-* @params[3] passive
-* @params[4] durable
-* @params[5] auto_delete
-* @params[6] internal
+* @params[4] passive
+* @params[5] durable
+* @params[6] auto_delete
+* @params[7] internal
 * @returns exchange object
 */
 LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   const char* exchange_name = luaL_checkstring(L, 2);
-  const char* exchange_type = luaL_checkstring(L, 3);
-  int passive = lua_toboolean(L, 4);
-  int durable = lua_toboolean(L, 5);
-  int auto_delete = lua_toboolean(L, 6);
-  int internal =  lua_toboolean(L, 7);
+  const char* exchange_type = luaL_optstring(L, 3, DEFAULT_EXCHANGE);
+  int passive = luaL_optboolean(L, 4, 0);
+  int durable = luaL_optboolean(L, 5, 1);
+  int auto_delete = luaL_optboolean(L, 6, 0);
+  int internal = luaL_optboolean(L, 7, 0);
 
   amqp_exchange_declare(chan -> connection -> amqp_connection, chan -> id, amqp_cstring_bytes(exchange_name),
                         amqp_cstring_bytes(exchange_type), passive, durable, auto_delete, internal,
@@ -46,35 +94,7 @@ LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
 * @returns exchange object
 */
 LUALIB_API int lua_amqp_channel_exchange(lua_State *L) {
-  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
-  const char* name = luaL_checkstring(L, 2);
-
-  exchange_t *exchange = (exchange_t *) lua_newuserdata(L, sizeof(exchange_t));
-  setmeta(L, "exchange");
-  exchange -> name = name;
-  exchange -> channel = chan;
-
-  return 1;
-}
-
-/**
-* :lua_amqp_channel_queue
-*
-* get a queue object
-*
-* @params[1] channel
-* @params[2] queue name
-* @returns queue object
-*/
-LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
-  channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
-  const char* queuename = luaL_checkstring(L, 2);
-
-  queue_t *queue = (queue_t *) lua_newuserdata(L, sizeof(queue_t));
-  setmeta(L, "queue");
-  queue -> name = queuename;
-  queue -> channel = chan;
-
+  lua_amqp_channel_exchange_declare(L);
   return 1;
 }
 
