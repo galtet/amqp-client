@@ -1,8 +1,18 @@
-void die(const char *fmt, ...);
-extern void die_on_error(int x, char const *context);
-extern void die_on_amqp_error(amqp_rpc_reply_t x, char const *context);
+#ifndef LUAAMQP_UTILS_H
+#define LUAAMQP_UTILS_H
 
-extern void amqp_dump(void const *buffer, size_t len);
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
-extern uint64_t now_microseconds(void);
-extern void microsleep(int usec);
+#define MAX_ERROR_MSG_LENGTH 200
+
+void throw_error(lua_State *L, const char* error_msg);
+
+void die(lua_State *L, const char *fmt, ...);
+void die_on_error(lua_State *L, int x, char const *context);
+void die_on_amqp_error(lua_State *L, amqp_rpc_reply_t x, char const *context);
+
+#endif
+
+

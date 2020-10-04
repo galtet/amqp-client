@@ -15,7 +15,7 @@ LUALIB_API int lua_amqp_exchange_delete(lua_State *L) {
   amqp_connection_state_t connection = exchange -> channel -> connection -> amqp_connection;
 
   amqp_exchange_delete(connection, exchange -> channel -> id, amqp_cstring_bytes(exchange -> name), if_used);
-  die_on_amqp_error(amqp_get_rpc_reply(connection), "Deleting exchange");
+  die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Deleting exchange");
 
   return 0;
 }
@@ -36,6 +36,7 @@ LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L) {
   const char *msg = luaL_checkstring(L,3);
 
   die_on_error(
+    L,
     amqp_basic_publish(connection, exchange -> channel -> id, amqp_cstring_bytes(exchange -> name), amqp_cstring_bytes(bindingkey), 0, 0, NULL, amqp_cstring_bytes(msg)),
     "Publishing"
   );

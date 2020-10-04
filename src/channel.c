@@ -26,7 +26,7 @@ LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
   amqp_exchange_declare(chan -> connection -> amqp_connection, chan -> id, amqp_cstring_bytes(exchange_name),
                         amqp_cstring_bytes(exchange_type), passive, durable, auto_delete, internal,
                         amqp_empty_table);
-  die_on_amqp_error(amqp_get_rpc_reply(chan -> connection -> amqp_connection), "Declaring exchange");
+  die_on_amqp_error(L, amqp_get_rpc_reply(chan -> connection -> amqp_connection), "Declaring exchange");
 
   exchange_t *exchange = (exchange_t *) lua_newuserdata(L, sizeof(exchange_t));
   setmeta(L, "exchange");
@@ -109,7 +109,7 @@ LUALIB_API int lua_amqp_channel_basic_qos(lua_State *L) {
 LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   uint64_t delivery_tag = luaL_checknumber(L, 2);
-  amqp_boolean_t multiple = luaL_checknumber(L,3);
+  amqp_boolean_t multiple =  luaL_optboolean(L, 3, 0);
 
   amqp_connection_state_t connection = chan -> connection -> amqp_connection;
   amqp_basic_ack(connection, chan -> id, delivery_tag, multiple);
@@ -130,8 +130,8 @@ LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
 LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   uint64_t delivery_tag = luaL_checknumber(L, 2);
-  amqp_boolean_t multiple = luaL_checknumber(L,3);
-  amqp_boolean_t requeue = luaL_checknumber(L,4);
+  amqp_boolean_t multiple = luaL_optboolean(L, 3, 0);
+  amqp_boolean_t requeue = luaL_optboolean(L, 4, 1);
 
   amqp_connection_state_t connection = chan -> connection -> amqp_connection;
   amqp_basic_nack(connection, chan -> id, delivery_tag, multiple, requeue);
@@ -149,7 +149,7 @@ LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
 LUALIB_API int lua_amqp_channel_free(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   if (chan -> connection -> amqp_connection) { // if connection was already closed - no need to close the channel, it was already closed
-    die_on_amqp_error(amqp_channel_close(chan -> connection -> amqp_connection, 1, AMQP_REPLY_SUCCESS), "Closing channel");
+    die_on_amqp_error(L, amqp_channel_close(chan -> connection -> amqp_connection, 1, AMQP_REPLY_SUCCESS), "Closing channel");
   }
 
   return 0;

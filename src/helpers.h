@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include "lauxlib.h"
 
+int luaL_optboolean(lua_State *L, int narg, int def);
+
 LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup);
 LUALIB_API void setmeta(lua_State *L, const char *name);
 LUALIB_API int createmeta(lua_State *L, const char *name, const luaL_Reg *methods);

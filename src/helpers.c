@@ -37,3 +37,7 @@ LUALIB_API int createmeta(lua_State *L, const char *name, const luaL_Reg *method
   lua_pop(L, 1);
   return 1;
 }
+
+int luaL_optboolean(lua_State *L, int narg, int def) {
+		return lua_isboolean(L, narg) ? lua_toboolean(L, narg) : def;
+}

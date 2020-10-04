@@ -41,7 +41,7 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
   setmeta(L, "channel");
 
   amqp_channel_open(connection, 1);
-  die_on_amqp_error(amqp_get_rpc_reply(connection), "Opening channel");
+  die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Opening channel");
 
   return 1;
 }
@@ -62,6 +62,7 @@ LUALIB_API int lua_amqp_session_open_channel(lua_State *L) {
 * @params timeout - time for the ssl connection init
 */
 void connect_ssl(
+  lua_State *L,
   amqp_connection_state_t connection,
   const char* hostname,
   int port,
@@ -75,13 +76,13 @@ void connect_ssl(
 
   socket = amqp_ssl_socket_new(connection);
   if (!socket) {
-    die("creating SSL/TLS socket");
+    die(L, "creating SSL/TLS socket");
   }
 
   amqp_ssl_socket_set_verify_peer(socket, 0);
   amqp_ssl_socket_set_verify_hostname(socket, 0);
 
-  die_on_error(amqp_ssl_socket_set_cacert(socket, cacert), "setting CA certificate");
+  die_on_error(L, amqp_ssl_socket_set_cacert(socket, cacert), "setting CA certificate");
 
   if (verify_peer) {
       amqp_ssl_socket_set_verify_peer(socket, 1);
@@ -90,27 +91,27 @@ void connect_ssl(
       amqp_ssl_socket_set_verify_hostname(socket, 1);
     }
 
-  die_on_error(amqp_ssl_socket_set_key(socket, cert, key), "setting client key");
+  die_on_error(L, amqp_ssl_socket_set_key(socket, cert, key), "setting client key");
 
   struct timeval tval;
   struct timeval* tv;
 
   tv = get_timeout(&tval, timeout);
-  die_on_error(amqp_socket_open_noblock(socket, hostname, port, tv), "opening SSL/TLS connection");
+  die_on_error(L, amqp_socket_open_noblock(socket, hostname, port, tv), "opening SSL/TLS connection");
 }
 
-void connect_regular(amqp_connection_state_t connection, const char* hostname, int port) {
+void connect_regular(lua_State *L, amqp_connection_state_t connection, const char* hostname, int port) {
   amqp_socket_t *socket = NULL;
   int status;
 
   socket = amqp_tcp_socket_new(connection);
   if (!socket) {
-    die("creating TCP socket");
+    die(L, "creating TCP socket");
   }
 
   status = amqp_socket_open(socket, hostname, port);
   if (status) {
-    die("opening TCP socket");
+    die(L, "opening TCP socket");
   }
 }
 
@@ -137,6 +138,8 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
 
   amqp_connection_state_t conn;
 
+  die(L, "THIS IS S TEST");
+
   fetch_connection_params(L);
 
   host = luaL_optstring(L, -1, DEFAULT_HOST);
@@ -154,12 +157,12 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
     cert = lua_tostring(L, -8);
     key = lua_tostring(L, -9);
     timeout = luaL_optint (L, -10, DEFAULT_SSL_TIMEOUT);
-    connect_ssl(conn, host, port, key, cert, cacert, 0, 0, timeout);
+    connect_ssl(L, conn, host, port, key, cert, cacert, 0, 0, timeout);
   } else {
-    connect_regular(conn, host, port);
+    connect_regular(L, conn, host, port);
   }
 
-  die_on_amqp_error(amqp_login(conn, vhost, 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, username, password), "Logging in");
+  die_on_amqp_error(L, amqp_login(conn, vhost, 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, username, password), "Logging in");
 
   connection_t *c = (connection_t *) lua_newuserdata(L, sizeof(connection_t));
   setmeta(L, "session");
@@ -176,11 +179,11 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
 LUALIB_API int lua_amqp_session_free(lua_State *L) {
   connection_t *conn = (connection_t *)luaL_checkudata(L, 1, "session");
   if (conn -> amqp_connection) {
-    die_on_amqp_error(amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");
-    die_on_error(amqp_destroy_connection(conn -> amqp_connection), "Ending connection");
+    die_on_amqp_error(L, amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");
+    die_on_error(L, amqp_destroy_connection(conn -> amqp_connection), "Ending connection");
 
     if (conn -> is_ssl) {
-      die_on_error(amqp_uninitialize_ssl_library(), "Uninitializing SSL library");
+      die_on_error(L, amqp_uninitialize_ssl_library(), "Uninitializing SSL library");
     }
 
     conn -> amqp_connection = NULL;
