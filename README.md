@@ -56,7 +56,7 @@ local queue = channel:queue('test_queue')
 queue:publish_message("This is a test !")
 
 -- fetch a message from the queue
-local msg, tag = queue:consume_message('test_queue')
+local msg, tag = queue:consume_message()
 
 print("This is the message: " .. msg)
 
