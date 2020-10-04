@@ -102,7 +102,7 @@ LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
   amqp_connection_state_t connection = queue -> channel -> connection -> amqp_connection;
   const char *msg = luaL_checkstring(L,2);
-  const char* exchange = luaL_checkstring(L,3);
+  const char* exchange = luaL_optstring(L,3, "");
 
   die_on_error(
     L,

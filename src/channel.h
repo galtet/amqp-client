@@ -13,7 +13,7 @@
 #include "structs.h"
 #include "helpers.h"
 
-#define DEFAULT_EXCHANGE "direct"
+#define DEFAULT_EXCHANGE_TYPE "direct"
 
 LUALIB_API int lua_amqp_channel_open(lua_State *L);
 

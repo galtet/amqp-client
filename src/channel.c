@@ -65,7 +65,7 @@ LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
 LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   const char* exchange_name = luaL_checkstring(L, 2);
-  const char* exchange_type = luaL_optstring(L, 3, DEFAULT_EXCHANGE);
+  const char* exchange_type = luaL_optstring(L, 3, DEFAULT_EXCHANGE_TYPE);
   int passive = luaL_optboolean(L, 4, 0);
   int durable = luaL_optboolean(L, 5, 1);
   int auto_delete = luaL_optboolean(L, 6, 0);

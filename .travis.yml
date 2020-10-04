@@ -5,6 +5,7 @@ services:
 
 before_install:
   - docker build -t amqp-client .
+  - docker-compose -f docker-compose.travis.yml up -d
 
 script:
-  - docker run -i amqp-client
+  - docker-compose -f docker-compose.travis.yml run amqp-client /bin/bash -lc "luarocks make && ./tests/run_tests.sh"

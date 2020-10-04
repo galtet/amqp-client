@@ -1,0 +1,13 @@
+# Inspired by https://docs.docker.com/compose/django/
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.7-alpine
+    expose:
+      - 5672
+
+  amqp-client:
+    image: amqp-client
+    depends_on:
+      - rabbitmq
