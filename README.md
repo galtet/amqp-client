@@ -1,4 +1,7 @@
 # Lua AMQP client
+
+[![Build Status](https://travis-ci.com/galtet/amqp-client.svg?branch=master)](https://travis-ci.com/galtet/amqp-client)
+
 > Lua C wrapper for the amqp library.
 
 A Lua C wrapper for the amqp library. based on: [rabbitmq-c](https://github.com/alanxz/rabbitmq-c)
