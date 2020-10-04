@@ -28,6 +28,7 @@ LUALIB_API int lua_amqp_session_free(lua_State *L);
 
 static const struct luaL_reg session_reg[] = {
   { "open_channel", lua_amqp_session_open_channel },
+  { "close", lua_amqp_session_free },
   { "__gc", lua_amqp_session_free },
   { NULL, NULL }
 };

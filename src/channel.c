@@ -148,7 +148,9 @@ LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
 */
 LUALIB_API int lua_amqp_channel_free(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
-  die_on_amqp_error(amqp_channel_close(chan -> connection -> amqp_connection, 1, AMQP_REPLY_SUCCESS), "Closing channel");
+  if (chan -> connection -> amqp_connection) { // if connection was already closed - no need to close the channel, it was already closed
+    die_on_amqp_error(amqp_channel_close(chan -> connection -> amqp_connection, 1, AMQP_REPLY_SUCCESS), "Closing channel");
+  }
 
   return 0;
 }
