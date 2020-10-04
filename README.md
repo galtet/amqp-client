@@ -64,6 +64,37 @@ print("This is the message: " .. msg)
 conn:close()
 ```
 
+#### Open ssl connection
+
+``` lua
+local amqp = require("amqp")
+
+-- Start a communication session with RabbitMQ
+local conn = amqp.new({ 
+  ssl = true, 
+  key = "/path/to/key.pem",
+  cert = "/path/to/cert.pem",
+  cacert = "/path/to/cert.pem"
+  })
+
+-- open a channel
+local channel = conn:open_channel()
+
+-- get an existing queue
+local queue = channel:queue('test_queue')
+
+-- publish a message to the default exchange which then gets routed to this queue
+queue:publish_message("This is a test !")
+
+-- fetch a message from the queue
+local msg, tag = queue:consume_message('test_queue')
+
+print("This is the message: " .. msg)
+
+-- close the connection
+conn:close()
+```
+
 ## Contributing
 
 1. Fork it (<https://github.com/galtet/amqp-client/fork>)
