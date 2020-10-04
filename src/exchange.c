@@ -1,5 +1,25 @@
 #include "exchange.h"
 
+ /**
+* :lua_amqp_exchange_delete
+*
+* deletes an exchange
+*
+* @params[1] exchange
+* @params[2] exchange name
+* @params[3] if_used
+*/
+LUALIB_API int lua_amqp_exchange_delete(lua_State *L) {
+  exchange_t *exchange = (exchange_t *)luaL_checkudata(L, 1, "exchange");
+  int if_used = lua_toboolean(L, 2);
+  amqp_connection_state_t connection = exchange -> channel -> connection -> amqp_connection;
+
+  amqp_exchange_delete(connection, exchange -> channel -> id, amqp_cstring_bytes(exchange -> name), if_used);
+  die_on_amqp_error(amqp_get_rpc_reply(connection), "Deleting exchange");
+
+  return 0;
+}
+
 /**
 * :lua_amqp_exchange_publish_message
 *

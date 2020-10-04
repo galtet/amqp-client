@@ -1,7 +1,7 @@
 #include "channel.h"
 
  /**
-* :lua_amqp_channel_declare_exchange
+* :lua_amqp_channel_exchange_declare
 *
 * declare a new exchange
 *
@@ -14,7 +14,7 @@
 * @params[6] internal
 * @returns exchange object
 */
-LUALIB_API int lua_amqp_channel_declare_exchange(lua_State *L) {
+LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
   const char* exchange_name = luaL_checkstring(L, 2);
   const char* exchange_type = luaL_checkstring(L, 3);

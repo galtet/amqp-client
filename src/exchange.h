@@ -16,10 +16,12 @@
 LUALIB_API int lua_amqp_exchange_open(lua_State *L);
 
 LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L);
+LUALIB_API int lua_amqp_exchange_delete(lua_State *L);
 
 
 static const struct luaL_reg exchange_reg[] = {
   { "publish_message",  lua_amqp_exchange_publish_message },
+  { "delete",  lua_amqp_exchange_delete },
   { NULL, NULL }
 };
 
