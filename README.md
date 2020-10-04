@@ -60,6 +60,9 @@ local msg, tag = queue:consume_message('test_queue')
 
 print("This is the message: " .. msg)
 
+-- acking the msg
+channel:ack(tag)
+
 -- close the connection
 conn:close()
 ```
