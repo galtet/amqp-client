@@ -60,6 +60,26 @@ local msg, tag = queue:consume_message('test_queue')
 
 print("This is the message: " .. msg)
 
+-- acking the msg
+channel:ack(tag)
+
+-- close the connection
+conn:close()
+```
+
+#### Open ssl connection
+
+``` lua
+local amqp = require("amqp")
+
+-- Start a secured communication with RabbitMQ
+local conn = amqp.new({ 
+  ssl = true, 
+  key = "/path/to/key.pem",
+  cert = "/path/to/cert.pem",
+  cacert = "/path/to/cert.pem"
+  })
+
 -- close the connection
 conn:close()
 ```
