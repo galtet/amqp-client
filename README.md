@@ -35,6 +35,35 @@ Using make - just run make and copy the library (bin/amqp.so) to the wanted loca
 make
 ```
 
+## Quick Start
+
+Below is a small snippet that demonstrates how to publish
+and synchronously consume messages with lua-amqp.
+
+``` lua
+local amqp = require("amqp")
+
+# Start a communication session with RabbitMQ
+local conn = amqp.new({})
+
+# open a channel
+local channel = conn:open_channel()
+
+# get an existing queue
+local queue = channel:queue('test_queue')
+
+# publish a message to the default exchange which then gets routed to this queue
+queue:publish_message("This is a test !")
+
+# fetch a message from the queue
+local msg, tag = queue:consume_message('test_queue')
+
+print("This is the message: " .. msg)
+
+# close the connection
+conn:close()
+```
+
 ## Contributing
 
 1. Fork it (<https://github.com/galtet/amqp-client/fork>)
