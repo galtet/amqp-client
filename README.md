@@ -67,6 +67,24 @@ channel:ack(tag)
 conn:close()
 ```
 
+#### Specific connection params
+
+``` lua
+local amqp = require("amqp")
+
+-- Start a communication session with RabbitMQ
+local conn = amqp.new({ 
+  host = '127.0.0.1',
+  port = 5672,
+  username = "admin",
+  password = "admin",
+  vhost ="/"
+})
+
+-- close the connection
+conn:close()
+```
+
 #### Open ssl connection
 
 ``` lua
