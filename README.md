@@ -56,12 +56,30 @@ local queue = channel:queue('test_queue')
 queue:publish_message("This is a test !")
 
 -- fetch a message from the queue
-local msg, tag = queue:consume_message('test_queue')
+local msg, tag = queue:consume_message()
 
 print("This is the message: " .. msg)
 
 -- acking the msg
 channel:ack(tag)
+
+-- close the connection
+conn:close()
+```
+
+#### Specific connection params
+
+``` lua
+local amqp = require("amqp")
+
+-- Start a communication session with RabbitMQ
+local conn = amqp.new({ 
+  host = '127.0.0.1',
+  port = 5672,
+  username = "admin",
+  password = "admin",
+  vhost ="/"
+})
 
 -- close the connection
 conn:close()
