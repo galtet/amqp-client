@@ -27,7 +27,7 @@ No official or convinient lua rock exists for communicating with rabbitmq - hope
 
 ## Build from source
 
-It can be build using luarocks builtin method or with Makefile.
+It can be built using luarocks builtin method or with Makefile.
 
 Using make - just run make and copy the library (bin/amqp.so) to the wanted location:
 
