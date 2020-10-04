@@ -1,10 +1,10 @@
 local amqp = require('amqp')
 
 local conn = amqp.new({
-  host = '127.0.0.1',
+  host = 'rabbitmq',
   port = 5672,
-  username = "admin",
-  password = "admin",
+  username = "guest",
+  password = "guest",
   vhost ="/"
 })
 
