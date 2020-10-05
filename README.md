@@ -1,6 +1,8 @@
 # Lua AMQP client
 
-[![Build Status](https://travis-ci.com/galtet/amqp-client.svg?branch=master)](https://travis-ci.com/galtet/amqp-client)
+[![Build Status](https://travis-ci.com/galtet/amqp-client.svg?branch=master)](https://travis-ci.com/galtet/amqp-client) 
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
 
 > Lua C wrapper for the amqp library.
 
