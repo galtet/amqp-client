@@ -1,8 +1,8 @@
 package = "lua-amqp-client"
-version = "1.0-3"
+version = "1.0-6"
 source = {
   url = "git://github.com/galtet/amqp-client.git",
-  tag = "v1.0-3"
+  tag = "v1.0-6"
 }
 description = {
   summary = "Lua amqp driver",
@@ -10,7 +10,7 @@ description = {
   Lua based amqp client, based around the official C library of amqp (librabbitmq)
   ]],
   homepage = "https://github.com/galtet/amqp-client",
-  license = "MIT/X11"
+  license = "MIT/X11" -- or whatever you like
 }
 dependencies = {
   "lua >= 5.1, < 5.4",
