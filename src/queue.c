@@ -16,7 +16,7 @@ LUALIB_API int lua_amqp_queue_bind(lua_State *L) {
   const char* exchange = luaL_checkstring(L, 2);
   const char* bindingkey = luaL_checkstring(L, 3);
 
-  amqp_table_t table;
+  amqp_table_t table = amqp_empty_table;
   amqp_table_t *table_ref = NULL;
 
   if (lua_gettop(L) == 4) {
@@ -52,7 +52,7 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
   const char* exchange = luaL_checkstring(L, 2);
   const char* bindingkey = luaL_checkstring(L, 3);
 
-  amqp_table_t table;
+  amqp_table_t table = amqp_empty_table;
   amqp_table_t *table_ref = NULL;
 
   if (lua_gettop(L) == 4) {

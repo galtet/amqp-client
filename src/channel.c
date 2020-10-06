@@ -21,7 +21,7 @@ LUALIB_API int lua_amqp_channel_queue_declare(lua_State *L) {
   int exclusive = luaL_optboolean(L, 5, 0);
   int auto_delete =  luaL_optboolean(L, 6, 0);
 
-  amqp_table_t table;
+  amqp_table_t table = amqp_empty_table;
   amqp_table_t *table_ref = NULL;
 
   if (lua_gettop(L) == 4) {
