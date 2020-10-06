@@ -1,13 +1,5 @@
 #include "queue.h"
 
-char* extract_envelope_message(void const *buffer, size_t len) {
-  char *res  = (char*)malloc(len + 1);
-  memcpy(res, buffer, len);
-  res[len] = '\0';
-
-  return res;
-}
-
 /**
 * :lua_amqp_queue_bind
 *
@@ -24,9 +16,21 @@ LUALIB_API int lua_amqp_queue_bind(lua_State *L) {
   const char* exchange = luaL_checkstring(L, 2);
   const char* bindingkey = luaL_checkstring(L, 3);
 
+  amqp_table_t table;
+  amqp_table_t *table_ref = NULL;
+
+  if (lua_gettop(L) == 4) {
+    create_amqp_table(L, -1, &table);
+    table_ref = &table;
+  }
+
   amqp_queue_bind(connection, channel, amqp_cstring_bytes(queue -> name),
                   amqp_cstring_bytes(exchange), amqp_cstring_bytes(bindingkey),
-                  amqp_empty_table);
+                  table);
+  if (table_ref) {
+    free(table_ref->entries);
+  }
+
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "binding");
 
   return 0;
@@ -48,9 +52,22 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
   const char* exchange = luaL_checkstring(L, 2);
   const char* bindingkey = luaL_checkstring(L, 3);
 
+  amqp_table_t table;
+  amqp_table_t *table_ref = NULL;
+
+  if (lua_gettop(L) == 4) {
+    create_amqp_table(L, -1, &table);
+    table_ref = &table;
+  }
+
   amqp_queue_unbind(connection, channel, amqp_cstring_bytes(queue -> name),
                   amqp_cstring_bytes(exchange), amqp_cstring_bytes(bindingkey),
-                  amqp_empty_table);
+                  table);
+
+  if (table_ref) {
+    free(table_ref->entries);
+  }
+
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Unbinding");
 
   return 0;
@@ -67,10 +84,13 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
 LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
   amqp_connection_state_t connection = queue -> channel -> connection -> amqp_connection;
-  char *msg;
+  int no_local = luaL_optboolean(L, 2, 0);
+  int no_ack = luaL_optboolean(L, 3, 0);
+  int no_exclusive = luaL_optboolean(L, 4, 0);
+
 
   // subscribing for the queue - blocking call
-  amqp_basic_consume(connection, 1, amqp_cstring_bytes(queue -> name), amqp_empty_bytes, 0, 0, 0, amqp_empty_table);
+  amqp_basic_consume(connection, 1, amqp_cstring_bytes(queue -> name), amqp_empty_bytes, no_local, no_ack, no_exclusive, amqp_empty_table);
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Consuming");
 
   amqp_envelope_t envelope;
@@ -79,11 +99,11 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   die_on_amqp_error(L, amqp_consume_message(connection, &envelope, NULL, 0), "Fetching message"); // blocking call - waiting for a message
 
   // returning the msg + delivery tag
-  msg = extract_envelope_message(envelope.message.body.bytes, envelope.message.body.len);
+  char msg[envelope.message.body.len + 1];
+  extract_envelope_message(envelope.message.body.bytes, envelope.message.body.len, msg);
   lua_pushstring(L, msg);
   lua_pushnumber(L, envelope.delivery_tag);
 
-  free(msg);
   amqp_destroy_envelope(&envelope);
 
   return 2;
@@ -104,11 +124,24 @@ LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
   const char *msg = luaL_checkstring(L,2);
   const char* exchange = luaL_optstring(L,3, "");
 
+  amqp_basic_properties_t props;
+  amqp_basic_properties_t* props_ref = NULL;
+
+  if (lua_gettop(L) == 4) {
+    create_amqp_properties(L, -1, &props);
+    props_ref = &props;
+  }
+
   die_on_error(
     L,
-    amqp_basic_publish(connection, queue -> channel -> id, amqp_cstring_bytes(exchange), amqp_cstring_bytes(queue -> name), 0, 0, NULL, amqp_cstring_bytes(msg)),
+    amqp_basic_publish(connection, queue -> channel -> id, amqp_cstring_bytes(exchange), amqp_cstring_bytes(queue -> name), 0, 0, props_ref, amqp_cstring_bytes(msg)),
     "Publishing"
   );
+
+  if (props_ref) {
+    free((props_ref->headers).entries);
+  }
+
   return 1;
 }
 

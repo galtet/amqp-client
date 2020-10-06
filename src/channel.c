@@ -21,9 +21,20 @@ LUALIB_API int lua_amqp_channel_queue_declare(lua_State *L) {
   int exclusive = luaL_optboolean(L, 5, 0);
   int auto_delete =  luaL_optboolean(L, 6, 0);
 
+  amqp_table_t table;
+  amqp_table_t *table_ref = NULL;
+
+  if (lua_gettop(L) == 4) {
+    create_amqp_table(L, -1, &table);
+    table_ref = &table;
+  }
+
   amqp_queue_declare(chan -> connection -> amqp_connection, chan -> id, amqp_cstring_bytes(queue_name),
                      passive, durable, exclusive, auto_delete,
                      amqp_empty_table);
+  if (table_ref) {
+    free(table_ref->entries);
+  }
   die_on_amqp_error(L, amqp_get_rpc_reply(chan -> connection -> amqp_connection), "Declaring queue");
 
   queue_t *queue = (queue_t *) lua_newuserdata(L, sizeof(queue_t));

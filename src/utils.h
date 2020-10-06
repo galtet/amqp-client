@@ -5,6 +5,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <amqp.h>
+#include <amqp_framing.h>
+
 #define MAX_ERROR_MSG_LENGTH 200
 
 void throw_error(lua_State *L, const char* error_msg);

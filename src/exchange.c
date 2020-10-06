@@ -35,11 +35,23 @@ LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L) {
   const char *bindingkey = luaL_checkstring(L, 2);
   const char *msg = luaL_checkstring(L,3);
 
+  amqp_basic_properties_t props;
+  amqp_basic_properties_t* props_ref = NULL;
+
+  if (lua_gettop(L) == 4) {
+    create_amqp_properties(L, -1, &props);
+    props_ref = &props;
+  }
+
   die_on_error(
     L,
-    amqp_basic_publish(connection, exchange -> channel -> id, amqp_cstring_bytes(exchange -> name), amqp_cstring_bytes(bindingkey), 0, 0, NULL, amqp_cstring_bytes(msg)),
+    amqp_basic_publish(connection, exchange -> channel -> id, amqp_cstring_bytes(exchange -> name), amqp_cstring_bytes(bindingkey), 0, 0, props_ref, amqp_cstring_bytes(msg)),
     "Publishing"
   );
+
+  if (props_ref) {
+    free((props_ref->headers).entries);
+  }
   return 1;
 }
 
