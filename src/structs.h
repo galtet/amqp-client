@@ -24,4 +24,8 @@ typedef struct {
   const char* name;
 } exchange_t;
 
+typedef struct structs {
+  amqp_envelope_t *envelope;
+} properties_t;
+
 #endif

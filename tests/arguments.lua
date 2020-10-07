@@ -1,6 +1,6 @@
 local amqp = require("amqp")
 
--- Start a communication session with RabbitMQ
+--Start a communication session with RabbitMQ
 local conn = amqp.new({
   host = 'rabbitmq',
   port = 5672,
@@ -18,12 +18,17 @@ local queue = channel:queue_declare(queue_name)
 local exchange = channel:exchange_declare(exchange_name, "headers")
 
 queue:bind(exchange_name, "", { w11 = "65" })
-exchange:publish_message("", msg, { w11 = "65" })
-
-local new_msg, tag = queue:consume_message()
+exchange:publish_message("", msg, {}, { w11 = "65" })
+local new_msg, tag, properties = queue:consume_message()
 assert(new_msg == msg)
+assert(properties:headers()['w11'] == "65")
+channel:ack(tag)
 
--- acking the msg
+queue:bind(exchange_name, "", { aa = "bb", cc = "dd" })
+exchange:publish_message("", msg, {}, { aa = "bb", cc = "dd" })
+new_msg, tag, properties = queue:consume_message()
+assert(new_msg == msg)
+assert(properties:headers()['aa'] == "bb" and properties:headers()['cc'] == "dd")
 channel:ack(tag)
 
 -- close the connection

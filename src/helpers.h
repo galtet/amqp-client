@@ -9,6 +9,8 @@
 #include<string.h>
 #include <stdlib.h>
 
+#define MAX_ERR_LENGTH 200
+
 int luaL_optboolean(lua_State *L, int narg, int def);
 
 LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup);
@@ -18,6 +20,7 @@ LUALIB_API int get_num_of_keys(lua_State *L, int index);
 
 void extract_envelope_message(void const *buffer, size_t len, char* res);
 void create_amqp_table(lua_State *L, int index, amqp_table_t *table);
+void create_amqp_headers(lua_State *L, int index, amqp_basic_properties_t *props);
 void create_amqp_properties(lua_State *L, int index, amqp_basic_properties_t *props);
 
 #endif

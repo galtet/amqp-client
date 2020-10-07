@@ -84,7 +84,7 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
 * @params[2] - optional - no_local
 * @params[3] - optional - no_ack
 * @params[4] - optional - no_exclusive
-* @returns the string message and the delivery tag
+* @returns the string message, delivery tag, properties
 */
 LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
@@ -98,20 +98,24 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   amqp_basic_consume(connection, 1, amqp_cstring_bytes(queue -> name), amqp_empty_bytes, no_local, no_ack, no_exclusive, amqp_empty_table);
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Consuming");
 
-  amqp_envelope_t envelope;
+  amqp_envelope_t *envelope = malloc(sizeof(amqp_envelope_t));
 
   amqp_maybe_release_buffers(connection);
-  die_on_amqp_error(L, amqp_consume_message(connection, &envelope, NULL, 0), "Fetching message"); // blocking call - waiting for a message
+  die_on_amqp_error(L, amqp_consume_message(connection, envelope, NULL, 0), "Fetching message"); // blocking call - waiting for a message
 
   // returning the msg + delivery tag
-  char msg[envelope.message.body.len + 1];
-  extract_envelope_message(envelope.message.body.bytes, envelope.message.body.len, msg);
+  char msg[envelope->message.body.len + 1];
+  extract_envelope_message(envelope->message.body.bytes, envelope->message.body.len, msg);
   lua_pushstring(L, msg);
-  lua_pushnumber(L, envelope.delivery_tag);
+  lua_pushnumber(L, envelope->delivery_tag);
 
-  amqp_destroy_envelope(&envelope);
+  // adding the msg properties
+  properties_t *props = (properties_t *) lua_newuserdata(L, sizeof(properties_t));
+  props -> envelope = envelope;//&envelope->message.properties;
+  setmeta(L, "properties");
 
-  return 2;
+
+  return 3;
 }
 
 /**
@@ -133,9 +137,14 @@ LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
   amqp_basic_properties_t props;
   amqp_basic_properties_t* props_ref = NULL;
 
-  if (lua_gettop(L) == 4) {
-    create_amqp_properties(L, -1, &props);
+  // regular args
+  if (lua_gettop(L) > 3) {
+    create_amqp_properties(L, -2, &props);
     props_ref = &props;
+  }
+  // headers
+  if (lua_gettop(L) > 4) {
+    create_amqp_headers(L, -1, &props);
   }
 
   die_on_error(
@@ -144,7 +153,7 @@ LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
     "Publishing"
   );
 
-  if (props_ref) {
+  if (props_ref && (props_ref->headers).entries) {
     free((props_ref->headers).entries);
   }
 

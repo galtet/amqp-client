@@ -28,6 +28,7 @@ LUALIB_API int lua_amqp_exchange_delete(lua_State *L) {
 * @params[1] exchange
 * @params[2] bindingkey
 * @params[3] the message to be published
+* @params[4] - optional - arguments
 */
 LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L) {
   exchange_t *exchange = (exchange_t *)luaL_checkudata(L, 1, "exchange");
@@ -38,9 +39,14 @@ LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L) {
   amqp_basic_properties_t props;
   amqp_basic_properties_t* props_ref = NULL;
 
-  if (lua_gettop(L) == 4) {
-    create_amqp_properties(L, -1, &props);
+  // regular args
+  if (lua_gettop(L) > 3) {
+    create_amqp_properties(L, -2, &props);
     props_ref = &props;
+  }
+  // headers
+  if (lua_gettop(L) > 4) {
+    create_amqp_headers(L, -1, &props);
   }
 
   die_on_error(
@@ -49,7 +55,7 @@ LUALIB_API int lua_amqp_exchange_publish_message(lua_State *L) {
     "Publishing"
   );
 
-  if (props_ref) {
+  if (props_ref && (props_ref->headers).entries) {
     free((props_ref->headers).entries);
   }
   return 1;

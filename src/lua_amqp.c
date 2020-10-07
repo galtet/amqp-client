@@ -6,6 +6,7 @@ static const luaL_Reg modules[] = {
   { "channel", lua_amqp_channel_open },
   { "queue", lua_amqp_queue_open },
   { "exchange", lua_amqp_exchange_open },
+  { "properties", lua_amqp_properties_open },
   {NULL, NULL}
 };
 

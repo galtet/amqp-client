@@ -19,7 +19,7 @@ build = {
    type = "builtin",
    modules = {
       amqp = {
-         sources = {"src/channel.c", "src/helpers.c", "src/lua_amqp.c", "src/queue.c", "src/session.c", "src/utils.c", "src/exchange.c"},
+         sources = {"src/channel.c", "src/helpers.c", "src/lua_amqp.c", "src/queue.c", "src/session.c", "src/utils.c", "src/exchange.c", "src/properties.c"},
          libraries = {"rabbitmq"}
       }
    }

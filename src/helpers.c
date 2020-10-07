@@ -75,9 +75,9 @@ void create_amqp_table(lua_State *L, int index, amqp_table_t *table) {
     lua_pushnil(L);  /* first key */
     while (lua_next(L, index-1) != 0) {
       /* uses 'key' (at index -1) and 'value' (at index) */
-      table->entries[entry_i].key = amqp_cstring_bytes(luaL_checkstring(L, index-1));
+      table->entries[entry_i].key = amqp_cstring_bytes(luaL_checkstring(L, -2));
       table->entries[entry_i].value.kind = AMQP_FIELD_KIND_UTF8;
-      table->entries[entry_i].value.value.bytes = amqp_cstring_bytes(luaL_checkstring(L, index));
+      table->entries[entry_i].value.value.bytes = amqp_cstring_bytes(luaL_checkstring(L, -1));
     //  amqp_cstring_bytes(luaL_checkstring(L, index));
 
       lua_pop(L, 1);
@@ -89,11 +89,42 @@ void create_amqp_table(lua_State *L, int index, amqp_table_t *table) {
 }
 
 // setting headers from the stack into amqp properties
+void create_amqp_headers(lua_State *L, int index, amqp_basic_properties_t *props) {
+  amqp_table_t *table = &(props->headers);
+  create_amqp_table(L, -1, table);
+  props->_flags |= AMQP_BASIC_HEADERS_FLAG;
+}
+
+// setting headers from the stack into amqp properties
 void create_amqp_properties(lua_State *L, int index, amqp_basic_properties_t *props) {
-    memset(props, 0, sizeof *props);
-    amqp_table_t *table = &(props->headers);
-    create_amqp_table(L, -1, table);
-    props->_flags |= AMQP_BASIC_HEADERS_FLAG;
+  memset(props, 0, sizeof *props);
+  char err_msg[MAX_ERR_LENGTH];
+  const char *key;
+
+  if (lua_type(L, index) == LUA_TTABLE) {
+    /* table is in the stack at index */
+    lua_pushnil(L);  /* first key */
+    while (lua_next(L, index-1) != 0) {
+      key = luaL_checkstring(L, -2);
+      if  (strcmp(key, "content_type") == 0) {
+        props->_flags |= AMQP_BASIC_CONTENT_TYPE_FLAG;
+        props->content_type = amqp_cstring_bytes(luaL_checkstring(L, -1));
+      } else if (strcmp(key, "content_encoding") == 0) {
+        props->_flags |= AMQP_BASIC_CONTENT_ENCODING_FLAG;
+        props->content_encoding = amqp_cstring_bytes(luaL_checkstring(L, -1));
+      } else if (strcmp(key, "reply_to") == 0) {
+        props->_flags |= AMQP_BASIC_REPLY_TO_FLAG;
+        props->reply_to = amqp_cstring_bytes(luaL_checkstring(L, -1));
+      } else {
+        snprintf(err_msg, MAX_ERR_LENGTH, "illegal properties key: '%s'", key);
+        die(L, err_msg);
+      }
+      lua_pop(L, 1);
+    }
+  } else {
+      snprintf(err_msg, MAX_ERR_LENGTH, "Properties table must be of type table. found type: '%d' (lua type)", lua_type(L, index));
+      die(L, err_msg);
+  }
 }
 
 /*
