@@ -121,6 +121,7 @@ void connect_regular(lua_State *L, amqp_connection_state_t connection, const cha
 * opens a new amqp session
 *
 * @params[1] table with the following fields: host, port, username, password, vhost
+* SSL fields - cacert, cert, key, timeout, ssl
 */
 LUALIB_API int lua_amqp_session_new(lua_State *L) {
   int port;

@@ -8,6 +8,7 @@
 * @params[1] queue
 * @params[2] exchange name
 * @params[3] binding key
+* @params[4] - optional - headers
 */
 LUALIB_API int lua_amqp_queue_bind(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
@@ -44,6 +45,7 @@ LUALIB_API int lua_amqp_queue_bind(lua_State *L) {
 * @params[1] queue
 * @params[2] exchange name
 * @params[3] binding key
+* @params[4] - optional - headers
 */
 LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");
@@ -79,6 +81,9 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
 * consuming 1 message from the queue - blocking call
 *
 * @params[1] queue
+* @params[2] - optional - no_local
+* @params[3] - optional - no_ack
+* @params[4] - optional - no_exclusive
 * @returns the string message and the delivery tag
 */
 LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
@@ -116,7 +121,8 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
 *
 * @params[1] queue
 * @params[2] the message to be published
-* @params[3] the exchange name
+* @params[3] - optional - the exchange name
+* @params[4] - optional - arguments
 */
 LUALIB_API int lua_amqp_queue_publish_message(lua_State *L) {
   queue_t *queue = (queue_t *)luaL_checkudata(L, 1, "queue");

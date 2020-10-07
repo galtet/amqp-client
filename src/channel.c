@@ -7,10 +7,11 @@
 *
 * @params[1] channel
 * @params[2] queue name
-* @params[3] passive
-* @params[4] durable
-* @params[5] exclusive
-* @params[6] auto_delete
+* @params[3] - optional - passive
+* @params[4] - optional - durable
+* @params[5] - optional -exclusive
+* @params[6] - optional -auto_delete
+* @params[7] - optional - headers
 * @returns queue object
 */
 LUALIB_API int lua_amqp_channel_queue_declare(lua_State *L) {
@@ -66,11 +67,11 @@ LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
 *
 * @params[1] channel
 * @params[2] exchange name
-* @params[3] exchange type
-* @params[4] passive
-* @params[5] durable
-* @params[6] auto_delete
-* @params[7] internal
+* @params[3] - optional - exchange type
+* @params[4] - optional - passive
+* @params[5] - optional - durable
+* @params[6] - optional - auto_delete
+* @params[7] - optional - internal
 * @returns exchange object
 */
 LUALIB_API int lua_amqp_channel_exchange_declare(lua_State *L) {
@@ -135,7 +136,7 @@ LUALIB_API int lua_amqp_channel_basic_qos(lua_State *L) {
 *
 * @params[1] channel
 * @params[2] delivery tag - the massage indentifier
-* @params[3] multiple - ack all msg's until this tag
+* @params[3] - optional - multiple - ack all msg's until this tag
 */
 LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
@@ -155,8 +156,8 @@ LUALIB_API int lua_amqp_channel_basic_ack(lua_State *L) {
 *
 * @params[1] channel
 * @params[2] delivery tag - the massage indentifier
-* @params[3] multiple - nack all msg's until this tag
-* @params[4] requeue - whether to requeue the msg or not
+* @params[3] - optional - multiple - nack all msg's until this tag
+* @params[4] - optional - requeue - whether to requeue the msg or not
 */
 LUALIB_API int lua_amqp_channel_basic_nack(lua_State *L) {
   channel_t *chan = (channel_t *)luaL_checkudata(L, 1, "channel");
