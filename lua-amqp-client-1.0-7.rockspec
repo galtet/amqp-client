@@ -1,8 +1,8 @@
 package = "lua-amqp-client"
-version = "1.0-6"
+version = "1.0"
 source = {
   url = "git://github.com/galtet/amqp-client.git",
-  tag = "v1.0-6"
+  tag = "v1.0-7"
 }
 description = {
   summary = "Lua amqp driver",
