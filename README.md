@@ -14,7 +14,7 @@ A Lua C wrapper for the amqp library. based on: [rabbitmq-c](https://github.com/
 
 This rock is relying on the librabbitmq library.
 
-In order to install it, install the following RPMs (>= 0.9):
+In order to install it, install the following RPMs (>= 0.8):
 * librabbitmq
 * librabbitmq-devel
 
