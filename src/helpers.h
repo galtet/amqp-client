@@ -23,4 +23,6 @@ void create_amqp_table(lua_State *L, int index, amqp_table_t *table);
 void create_amqp_headers(lua_State *L, int index, amqp_basic_properties_t *props);
 void create_amqp_properties(lua_State *L, int index, amqp_basic_properties_t *props);
 
+struct timeval* get_timeout(struct timeval *tv, int timeout);
+
 #endif

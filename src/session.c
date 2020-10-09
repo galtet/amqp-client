@@ -15,17 +15,6 @@ void fetch_connection_params(lua_State *L) {
   lua_getfield(L, 1, "host");
 }
 
-struct timeval* get_timeout(struct timeval *tv, int timeout) {
-  if (timeout > 0) {
-    tv->tv_sec = timeout;
-    tv->tv_usec = 0;
-  } else {
-    return NULL;
-  }
-
-  return tv;
-}
-
 /**
  * :lua_amqp_session_open_channel
  *
@@ -139,6 +128,7 @@ LUALIB_API int lua_amqp_session_new(lua_State *L) {
 
   amqp_connection_state_t conn;
 
+
   fetch_connection_params(L);
 
   host = luaL_optstring(L, -1, DEFAULT_HOST);
@@ -180,10 +170,6 @@ LUALIB_API int lua_amqp_session_free(lua_State *L) {
   if (conn -> amqp_connection) {
     die_on_amqp_error(L, amqp_connection_close(conn -> amqp_connection, AMQP_REPLY_SUCCESS), "Closing connection");
     die_on_error(L, amqp_destroy_connection(conn -> amqp_connection), "Ending connection");
-
-    if (conn -> is_ssl) {
-      die_on_error(L, amqp_uninitialize_ssl_library(), "Uninitializing SSL library");
-    }
 
     conn -> amqp_connection = NULL;
   }

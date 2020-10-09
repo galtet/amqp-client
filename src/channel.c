@@ -56,6 +56,7 @@ LUALIB_API int lua_amqp_channel_queue_declare(lua_State *L) {
 * @returns queue object
 */
 LUALIB_API int lua_amqp_channel_queue(lua_State *L) {
+  lua_pushboolean(L, 1);
   lua_amqp_channel_queue_declare(L);
   return 1;
 }

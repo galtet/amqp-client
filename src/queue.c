@@ -84,6 +84,7 @@ LUALIB_API int lua_amqp_queue_unbind(lua_State *L) {
 * @params[2] - optional - no_local
 * @params[3] - optional - no_ack
 * @params[4] - optional - no_exclusive
+* @params[5] - optional - timeout
 * @returns the string message, delivery tag, properties
 */
 LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
@@ -92,16 +93,20 @@ LUALIB_API int lua_amqp_queue_consume_message(lua_State *L) {
   int no_local = luaL_optboolean(L, 2, 0);
   int no_ack = luaL_optboolean(L, 3, 0);
   int no_exclusive = luaL_optboolean(L, 4, 0);
+  int timeout = luaL_optnumber(L, 5, 0); //milliseconds
 
+  struct timeval tval;
+  struct timeval* tv;
+
+  tv = get_timeout(&tval, timeout);
 
   // subscribing for the queue - blocking call
   amqp_basic_consume(connection, 1, amqp_cstring_bytes(queue -> name), amqp_empty_bytes, no_local, no_ack, no_exclusive, amqp_empty_table);
   die_on_amqp_error(L, amqp_get_rpc_reply(connection), "Consuming");
-
   amqp_envelope_t *envelope = malloc(sizeof(amqp_envelope_t));
 
   amqp_maybe_release_buffers(connection);
-  die_on_amqp_error(L, amqp_consume_message(connection, envelope, NULL, 0), "Fetching message"); // blocking call - waiting for a message
+  die_on_amqp_error(L, amqp_consume_message(connection, envelope, tv, 0), "Fetching message"); // blocking call - waiting for a message
 
   // returning the msg + delivery tag
   char msg[envelope->message.body.len + 1];

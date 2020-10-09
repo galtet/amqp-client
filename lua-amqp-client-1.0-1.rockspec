@@ -16,11 +16,16 @@ dependencies = {
   "lua >= 5.1, < 5.4",
 }
 build = {
-   type = "builtin",
-   modules = {
-      amqp = {
-         sources = {"src/channel.c", "src/helpers.c", "src/lua_amqp.c", "src/queue.c", "src/session.c", "src/utils.c", "src/exchange.c", "src/properties.c"},
-         libraries = {"rabbitmq"}
-      }
-   }
+  type = "make",
+  install_target = "",
+  variables = {
+  },
+  build_variables = {
+   DRIVER_LIBS = "",
+  },
+  install = {
+    lib = {
+      ["amqp"] = "bin/amqp.so"
+    }
+  }
 }

@@ -58,6 +58,18 @@ LUALIB_API int get_num_of_keys(lua_State *L, int index) {
  *  AMQP SPECIFIC HELPERS
  */
 
+
+struct timeval* get_timeout(struct timeval *tv, int timeout) {
+  if (timeout > 0) {
+    tv->tv_sec = 0;
+    tv->tv_usec = timeout;
+  } else {
+    return NULL;
+  }
+
+  return tv;
+}
+
 void extract_envelope_message(void const *buffer, size_t len, char* res) {
   memcpy(res, buffer, len);
   res[len] = '\0';
