@@ -90,7 +90,7 @@ local conn = amqp.new({
 conn:close()
 ```
 
-#### Open ssl connection
+#### Open SSL connection
 
 ``` lua
 local amqp = require("amqp")
