@@ -8,7 +8,7 @@
 #include <amqp.h>
 #include <amqp_framing.h>
 
-#define MAX_ERROR_MSG_LENGTH 200
+#define MAX_ERROR_MSG_LENGTH 1000
 
 void throw_error(lua_State *L, const char* error_msg);
 

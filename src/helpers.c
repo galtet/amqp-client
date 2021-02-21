@@ -87,10 +87,14 @@ void create_amqp_table(lua_State *L, int index, amqp_table_t *table) {
     lua_pushnil(L);  /* first key */
     while (lua_next(L, index-1) != 0) {
       /* uses 'key' (at index -1) and 'value' (at index) */
+      if (lua_type(L, -1) == LUA_TNUMBER) {
+        table->entries[entry_i].value.kind = AMQP_FIELD_KIND_I32;
+        table->entries[entry_i].value.value.i32 = luaL_checknumber(L, -1);
+      } else if (lua_type(L, -1) == LUA_TSTRING) {
+      	table->entries[entry_i].value.kind = AMQP_FIELD_KIND_UTF8;
+      	table->entries[entry_i].value.value.bytes = amqp_cstring_bytes(luaL_checkstring(L, -1));
+      }
       table->entries[entry_i].key = amqp_cstring_bytes(luaL_checkstring(L, -2));
-      table->entries[entry_i].value.kind = AMQP_FIELD_KIND_UTF8;
-      table->entries[entry_i].value.value.bytes = amqp_cstring_bytes(luaL_checkstring(L, -1));
-    //  amqp_cstring_bytes(luaL_checkstring(L, index));
 
       lua_pop(L, 1);
       entry_i++;

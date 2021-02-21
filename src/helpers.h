@@ -9,7 +9,7 @@
 #include<string.h>
 #include <stdlib.h>
 
-#define MAX_ERR_LENGTH 200
+#define MAX_ERR_LENGTH 1000
 
 int luaL_optboolean(lua_State *L, int narg, int def);
 
